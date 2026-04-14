@@ -2,6 +2,13 @@ from transformers import pipeline
 from transformers import AutoTokenizer
 from transformers import AutoModel 
 
+from transformers import AutoModelForMultipleChoice
+import torch
+
+
+
+
+
 
 
 def predictions():
@@ -34,6 +41,25 @@ def tokenize():
     print(outputs.last_hidden_state.shape)
 
 
-tokenize()
+# tokenize()
 
 
+
+def multiple_choice():
+    model_name = "LIAMF-USP/roberta-large-finetuned-race"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForMultipleChoice.from_pretrained(model_name)
+
+    prompt = "Love is a very important thing in life. It can make us feel happy and fulfilled."
+    choices = ["Devil", "Love", "Angry", "happy" , "Sad"]
+
+    encodings = tokenizer(
+        [[prompt, c] for c in choices] ,
+        return_tensors="pt", padding=True, truncation=True
+    )
+    inputs = {k: v.unsqueeze(0) for k, v in encodings.items()}
+    outputs = model(**inputs)
+    predicted = torch.argmax(outputs.logits).item()
+    print(f"Answer: {outputs.logits}, Predicted choice: {choices[predicted]}")
+
+multiple_choice()
